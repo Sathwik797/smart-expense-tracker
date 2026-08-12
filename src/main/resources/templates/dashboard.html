@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Expense Tracker — Enterprise SaaS Dashboard</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="saas-theme">
+
+<div class="app-layout">
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo-icon">✨</div>
+            <div class="brand-text">
+                <h2>SmartExpense</h2>
+                <span class="brand-tag">SaaS Enterprise</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#overview-section" class="nav-item active">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </a>
+            <a href="#search-filter-section" class="nav-item">
+                <span class="nav-icon">🔍</span>
+                <span class="nav-label">Advanced Search</span>
+            </a>
+            <a href="#budget-section" class="nav-item">
+                <span class="nav-icon">🎯</span>
+                <span class="nav-label">Category Budgets</span>
+            </a>
+            <a href="#transactions-section" class="nav-item">
+                <span class="nav-icon">💳</span>
+                <span class="nav-label">Ledger</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar">SU</div>
+                <div class="user-info">
+                    <span class="user-name">Sathwik User</span>
+                    <span class="user-role">Demo Account (ID: 1)</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <div class="header-brand-title">
+                <h2>Financial Operations Platform</h2>
+            </div>
+
+            <div class="header-actions">
+                <button class="btn btn-outline" onclick="openCsvModal()">
+                    <span class="btn-icon">📥</span> Import CSV
+                </button>
+                <button class="btn btn-outline" onclick="openBudgetModal()">
+                    <span class="btn-icon">🎯</span> Set Budget
+                </button>
+                <button class="btn btn-primary-action" onclick="openTransactionModal()">
+                    <span class="btn-icon">➕</span> Add Transaction
+                </button>
+            </div>
+        </header>
+
+        <!-- Toast Notifications -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Dashboard Main Content -->
+        <main class="dashboard-body">
+
+            <!-- Welcome Header -->
+            <div id="overview-section" class="welcome-header">
+                <div>
+                    <h1>Financial Overview</h1>
+                    <p class="subtitle">Real-time ledger tracking, category budget limits, and transaction analytics.</p>
+                </div>
+                <div class="date-badge">
+                    <span>📅 Today: </span>
+                    <strong id="current-date-display"></strong>
+                </div>
+            </div>
+
+            <!-- Key Metrics Grid -->
+            <section class="metrics-grid">
+                <div class="metric-card expense-metric">
+                    <div class="metric-header">
+                        <span class="metric-title">Total Expense</span>
+                        <span class="metric-icon-bg">📉</span>
+                    </div>
+                    <div class="metric-value-group">
+                        <h2 id="stat-total-expense" class="metric-value">₹0.00</h2>
+                        <span class="metric-pill pill-red">Outflow</span>
+                    </div>
+                </div>
+
+                <div class="metric-card income-metric">
+                    <div class="metric-header">
+                        <span class="metric-title">Total Income</span>
+                        <span class="metric-icon-bg">📈</span>
+                    </div>
+                    <div class="metric-value-group">
+                        <h2 id="stat-total-income" class="metric-value">₹0.00</h2>
+                        <span class="metric-pill pill-green">Inflow</span>
+                    </div>
+                </div>
+
+                <div class="metric-card balance-metric">
+                    <div class="metric-header">
+                        <span class="metric-title">Net Balance</span>
+                        <span class="metric-icon-bg">💰</span>
+                    </div>
+                    <div class="metric-value-group">
+                        <h2 id="stat-net-balance" class="metric-value">₹0.00</h2>
+                        <span id="balance-pill" class="metric-pill pill-blue">Surplus</span>
+                    </div>
+                </div>
+
+                <div class="metric-card top-category-metric">
+                    <div class="metric-header">
+                        <span class="metric-title">Top Category</span>
+                        <span class="metric-icon-bg">🏷️</span>
+                    </div>
+                    <div class="metric-value-group">
+                        <h2 id="stat-top-category" class="metric-value">N/A</h2>
+                        <span class="metric-pill pill-purple">Highest Spend</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Smart Financial Insight Banner -->
+            <section class="insight-card">
+                <div class="insight-sparkle">💡</div>
+                <div class="insight-body">
+                    <div class="insight-title-row">
+                        <h4>Smart Insight Engine</h4>
+                        <span class="badge-ai">Rule Engine</span>
+                    </div>
+                    <p id="insight-text">Analyzing spending distributions...</p>
+                </div>
+            </section>
+
+            <!-- Advanced Search & Specification Filter Section -->
+            <section id="search-filter-section" class="card search-card">
+                <div class="card-header">
+                    <div>
+                        <h3>Advanced Specification Filter</h3>
+                        <span class="card-subtitle">Multi-condition dynamic search using JPA Specifications</span>
+                    </div>
+                </div>
+
+                <form id="search-form" onsubmit="handleAdvancedSearch(event)" class="search-form-grid">
+                    <div class="form-group">
+                        <label for="search-keyword">Keyword Search</label>
+                        <input type="text" id="search-keyword" placeholder="Search notes or category...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="search-category">Category</label>
+                        <input type="text" id="search-category" placeholder="e.g. Food, Travel">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="search-type">Type</label>
+                        <select id="search-type">
+                            <option value="">All Types</option>
+                            <option value="EXPENSE">Expense</option>
+                            <option value="INCOME">Income</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="search-payment-method">Payment Method</label>
+                        <select id="search-payment-method">
+                            <option value="">All Payment Methods</option>
+                            <option value="UPI">UPI</option>
+                            <option value="CASH">Cash</option>
+                            <option value="CREDIT_CARD">Credit Card</option>
+                            <option value="DEBIT_CARD">Debit Card</option>
+                            <option value="NET_BANKING">Net Banking</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="search-start-date">Start Date</label>
+                        <input type="date" id="search-start-date">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="search-end-date">End Date</label>
+                        <input type="date" id="search-end-date">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="search-min-amount">Min Amount (₹)</label>
+                        <input type="number" id="search-min-amount" step="0.01" min="0" placeholder="0.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="search-max-amount">Max Amount (₹)</label>
+                        <input type="number" id="search-max-amount" step="0.01" min="0" placeholder="Max amount">
+                    </div>
+
+                    <div class="search-form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="resetAdvancedSearch()">Reset Filters</button>
+                        <button type="submit" class="btn btn-primary-action">Apply Filters</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Category Budget Management Section -->
+            <section id="budget-section" class="card budget-card-section">
+                <div class="card-header flex-between">
+                    <div>
+                        <h3>Category Budget Status</h3>
+                        <span class="card-subtitle">Monthly limit progress and threshold alerts</span>
+                    </div>
+                    <div class="budget-period-selector">
+                        <label for="budget-period-input">Period: </label>
+                        <input type="month" id="budget-period-input" onchange="loadBudgets()">
+                    </div>
+                </div>
+
+                <div id="budget-status-grid" class="budget-grid">
+                    <div class="empty-state">No budgets configured for this period. Click "+ Set Budget" to create one.</div>
+                </div>
+            </section>
+
+            <!-- Analytics Visualizers Section (Charts) -->
+            <section id="analytics-section" class="analytics-grid">
+                
+                <!-- Category Breakdown Doughnut Chart -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <div>
+                            <h3>Category Distribution</h3>
+                            <span class="card-subtitle">Spending breakdown by category</span>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryChart"></canvas>
+                        <div id="chart-fallback" class="chart-fallback hidden">
+                            <p>No category data recorded yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Spending Trend Bar Chart -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <div>
+                            <h3>Daily Spending Trend</h3>
+                            <span class="card-subtitle">Expense timeline breakdown</span>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="trendChart"></canvas>
+                        <div id="trend-fallback" class="chart-fallback hidden">
+                            <p>No daily spending history available.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Recent Transactions Table Section -->
+            <section id="transactions-section" class="card table-card">
+                <div class="card-header table-header-bar">
+                    <div>
+                        <h3>Recent Transactions</h3>
+                        <span class="card-subtitle">Detailed ledger of all financial entries</span>
+                    </div>
+                    <div class="table-results-counter">
+                        <span id="results-count-badge" class="metric-pill pill-blue">0 records</span>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="saas-table">
+                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Payment Method</th>
+                            <th>Notes</th>
+                            <th class="text-right">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="expense-table-body">
+                        <tr>
+                            <td colspan="7" class="empty-state">Loading ledger entries...</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="saas-footer">
+            <p>SmartExpense Enterprise Platform &copy; 2026 | Built with Spring Boot 3 & JPA Specifications</p>
+        </footer>
+
+    </div>
+
+</div>
+
+<!-- Modal 1: Add / Edit Transaction -->
+<div id="transaction-modal" class="modal-backdrop hidden" onclick="closeModalOnBackdrop(event, 'transaction-modal')">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="modal-title">Add New Transaction</h3>
+            <button class="modal-close-btn" onclick="closeTransactionModal()">✕</button>
+        </div>
+
+        <form id="expense-form" onsubmit="handleTransactionSubmit(event)">
+            <input type="hidden" id="expense-id">
+
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label for="type">Transaction Type</label>
+                        <select id="type" required>
+                            <option value="EXPENSE">Expense 📉</option>
+                            <option value="INCOME">Income 📈</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group flex-1">
+                        <label for="amount">Amount (₹)</label>
+                        <input type="number" id="amount" step="0.01" min="0.01" placeholder="0.00" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label for="category">Category</label>
+                        <input type="text" id="category" placeholder="e.g. Food, Travel, Salary" required>
+                    </div>
+
+                    <div class="form-group flex-1">
+                        <label for="paymentMethod">Payment Method</label>
+                        <select id="paymentMethod" required>
+                            <option value="UPI">UPI / GPay / PhonePe</option>
+                            <option value="CASH">Cash</option>
+                            <option value="CREDIT_CARD">Credit Card</option>
+                            <option value="DEBIT_CARD">Debit Card</option>
+                            <option value="NET_BANKING">Net Banking</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Transaction Date</label>
+                    <input type="date" id="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description / Note (Optional)</label>
+                    <input type="text" id="description" placeholder="e.g. Dinner with team">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeTransactionModal()">Cancel</button>
+                <button type="submit" id="submit-btn" class="btn btn-primary-action">Save Entry</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal 2: Category Budget Config -->
+<div id="budget-modal" class="modal-backdrop hidden" onclick="closeModalOnBackdrop(event, 'budget-modal')">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>Set Category Monthly Budget</h3>
+            <button class="modal-close-btn" onclick="closeBudgetModal()">✕</button>
+        </div>
+
+        <form id="budget-form" onsubmit="handleBudgetSubmit(event)">
+            <input type="hidden" id="budget-id">
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="budget-category">Category</label>
+                    <input type="text" id="budget-category" placeholder="e.g. Food, Travel, Shopping" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="budget-limit">Monthly Limit (₹)</label>
+                    <input type="number" id="budget-limit" step="0.01" min="0.01" placeholder="e.g. 5000.00" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="budget-period">Period (YYYY-MM)</label>
+                    <input type="month" id="budget-period" required>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeBudgetModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary-action">Save Budget</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal 3: CSV Expense Import -->
+<div id="csv-modal" class="modal-backdrop hidden" onclick="closeModalOnBackdrop(event, 'csv-modal')">
+    <div class="modal-card modal-wide">
+        <div class="modal-header">
+            <h3>Import Transactions via CSV</h3>
+            <button class="modal-close-btn" onclick="closeCsvModal()">✕</button>
+        </div>
+
+        <form id="csv-form" onsubmit="handleCsvUpload(event)">
+            <div class="modal-body">
+                <div class="csv-instruction-box">
+                    <p><strong>Expected CSV Format:</strong></p>
+                    <code>date,description,category,amount,paymentMethod,type</code>
+                    <p class="text-muted" style="margin-top: 0.25rem;">Example: <code>2026-08-01,Dinner,Food,450.00,UPI,EXPENSE</code></p>
+                    <p class="text-danger" style="margin-top: 0.25rem;"><strong>Note:</strong> Atomic import enforces zero persistence if any row fails validation.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="csv-file-input">Select .csv File</label>
+                    <input type="file" id="csv-file-input" accept=".csv" required>
+                </div>
+
+                <div id="csv-result-panel" class="csv-result-panel hidden"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCsvModal()">Cancel</button>
+                <button type="submit" id="csv-submit-btn" class="btn btn-primary-action">Upload & Import</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- JS -->
+<script th:src="@{/js/script.js}" src="/js/script.js"></script>
+</body>
+</html>
